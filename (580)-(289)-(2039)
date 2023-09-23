@@ -1,98 +1,118 @@
---// Setting --
-getgenv().range = 9
-getgenv().lockOnRange = 25 -- Separate lock-on range
-getgenv().turnSpeed = 1
-
---// Variable --
 getgenv().player = game:GetService("Players").LocalPlayer
+getgenv().autoswing = false
 getgenv().lockon = false
+getgenv().range = 0
+getgenv().lockOnRange = 0
+getgenv().autoswingfov = 0
+getgenv().zaddy = false
+getgenv().fov = false
 getgenv().ssss = game.Players.LocalPlayer:GetMouse()
---// Script --
+
 game:GetService("RunService").RenderStepped:Connect(function()
     local p = game.Players:GetPlayers()
     local closestPlayer = nil
     local closestDistance = math.huge
-    
-    -- Find the closest player within the lock-on range
+
     for i = 2, #p do
         local v = p[i].Character
         if v and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
             local distance = player:DistanceFromCharacter(v.HumanoidRootPart.Position)
-            if distance <= lockOnRange and distance < closestDistance then
+            if distance <= lockOnRange or distance <= range and distance < closestDistance and v.Humanoid.Health > 0 then
                 closestPlayer = v
                 closestDistance = distance
             end
         end
     end
-    if closestDistance <= lockOnRange and  lockon == true then
+    if closestDistance <= lockOnRange and lockon == true and closestPlayer:FindFirstChild("Head") and closestPlayer:FindFirstChildOfClass('Humanoid') and closestPlayer:FindFirstChildOfClass('Humanoid').Health > 0 then
 		player.Character:FindFirstChildOfClass('Humanoid').AutoRotate = false
 	else
 		player.Character:FindFirstChildOfClass('Humanoid').AutoRotate = true
 	end
-    if closestPlayer then
+    if closestPlayer and closestPlayer:FindFirstChildOfClass('Humanoid') and closestPlayer:FindFirstChildOfClass('Humanoid').Health > 0  then
         local targetDirection = (closestPlayer.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).unit
         local playerFacingDirection = player.Character.HumanoidRootPart.CFrame.lookVector
         local dotProduct = playerFacingDirection:Dot(targetDirection)
-        
-        -- You can adjust the threshold (0.9 in this case) for how accurately the player needs to face the target.
-        if dotProduct < 0.9 and lockon == true then
-        
-            local newLookVector = player.Character.HumanoidRootPart.CFrame.lookVector:Lerp(targetDirection, turnSpeed * 0.1)
-            player.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position, player.Character.HumanoidRootPart.Position + newLookVector)
-        else
+    getgenv().TargetPart = closestPlayer.HumanoidRootPart
+getgenv().Part = player.Character.HumanoidRootPart
+getgenv().RotateX, RotateY, RotateZ = 0, 0, 0
+	if lockon == true and closestPlayer:FindFirstChild("Head") and closestDistance <= lockOnRange and closestPlayer:FindFirstChildOfClass('Humanoid') and closestPlayer:FindFirstChildOfClass('Humanoid').Health > 0 and player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+spawn(function()
+wait(0.1)
+Part.CFrame = CFrame.new(Part.Position, TargetPart.Position) * CFrame.Angles(math.rad(0), math.rad(25), math.rad(0))
 		
-		end
+end)
+	end
         
-        -- Check if the player is within the interaction range
-        if closestDistance <= range then
+        
+        if closestDistance <= range and closestPlayer:FindFirstChild("Head") and  closestPlayer:FindFirstChildOfClass('Humanoid') and closestPlayer:FindFirstChildOfClass('Humanoid').Health > 0  then
             local tool = player.Character and player.Character:FindFirstChildOfClass("Tool")
-            if tool and tool:FindFirstChild("Handle") then
-                tool:Activate()
+            if tool and tool:FindFirstChild("Handle") and getgenv().autoswing == true then
+            
+			if dotProduct >= 0.5 or fov == false then
+			    tool:Activate()
                 for i, v in next, closestPlayer:GetChildren() do
                     if v:IsA("BasePart") then
                         firetouchinterest(tool.Handle, v, 0)
                         firetouchinterest(tool.Handle, v, 1)
+					end
                     end
-                end
-            end
+
+										end
+            	end
         end
     end
 end)
 
 local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall%20v3')))()
 
-local w = library:CreateWindow("here is da") -- Creates the window
+local w = library:CreateWindow("here is da")
 
-local b = w:CreateFolder("best sword gui") -- Creates the folder(U will put here your buttons,etc)
+local b = w:CreateFolder("best sword gui")
 b:Slider("Range",{
-    min = 1; -- min value of the slider
-    max = 25; -- max value of the slider
-    precise = false; -- max 2 decimals
+    min = 1; 
+    max = 25;
+    precise = false;
 },function(value)
 getgenv().range = value
 end)
 b:Slider("lock on Range",{
-    min = 1; -- min value of the slider
-    max = 25; -- max value of the slider
-    precise = false; -- max 2 decimals
+    min = 1; 
+    max = 25; 
+    precise = false; 
 },function(value)
 getgenv().lockOnRange = value
 end)
-b:Slider("lock on Speed",{
-    min = 1; -- min value of the slider
-    max = 10; -- max value of the slider
-    precise = false; -- max 2 decimals
+b:Slider("Autoswing fov",{
+    min = 0; 
+    max = 1.01; 
+    precise = true; 
 },function(value)
-getgenv().turnSpeed = value
+if value == 1.01 then
+	getgenv().fov = false
+	else
+getgenv().autoswingfov = value
+getgenv().fov = true
+end
 end)
-local yourvariable = b:Label("Lockon is off",{
-    TextSize = 25; -- Self Explaining
+local yourvariable = b:Label("Lockon is false",{
+    TextSize = 25; 
+    TextColor = Color3.fromRGB(255,255,255);
+    BgColor = Color3.fromRGB(69,69,69);
+})
+local yourvariable2 = b:Label("Autoswing is false",{
+    TextSize = 25; 
     TextColor = Color3.fromRGB(255,255,255);
     BgColor = Color3.fromRGB(69,69,69);
 })
 ssss.KeyDown:connect(function(key)
-if key == "x" then
+if key == "z" then
 getgenv().lockon = not lockon
 yourvariable:Refresh("Lockon is "..tostring(lockon)) 
+end
+end)
+ssss.KeyDown:connect(function(key)
+if key == "x" then
+getgenv().autoswing = not autoswing
+yourvariable2:Refresh("Autoswing is "..tostring(autoswing)) 
 end
 end)
